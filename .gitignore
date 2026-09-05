@@ -1,0 +1,27 @@
+# Build output
+bin/
+*.o
+*.ppu
+*.a
+*.exe
+*.dmg
+*.app
+
+# OS
+.DS_Store
+._*
+Thumbs.db
+
+# Editors / IDEs
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+.vscode/
+.cursor/
+*.swp
+*~
+
+# Logs
+*.log
