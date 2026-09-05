@@ -87,6 +87,8 @@ begin
   if (X < 0) or (Y < 0) or (X >= Pm.Width) or (Y >= Pm.Height) then
     Exit;
   I := Y * Pm.Width + X;
+  { XOR the RGB only. Forcing alpha keeps the streaming texture opaque;
+    two white strokes on black cancel in the overlap — QuickDraw moiré. }
   Pm.Pixels[I] := (Pm.Pixels[I] xor (Color and $00FFFFFF)) or $FF000000;
 end;
 
@@ -301,11 +303,13 @@ begin
   CX := Pm.Width div 2;
   CY := Pm.Height div 2;
   Amp := Max(8, Min(Pm.Width, Pm.Height) div 8);
+  { Incommensurate frequencies so the two origins never lock in step. }
   C1X := CX + Round(Cos(Angle) * Amp);
   C1Y := CY + Round(Sin(Angle * 0.83) * Amp);
   C2X := CX + Round(Cos(Angle * 1.17 + Pi) * Amp);
   C2Y := CY + Round(Sin(Angle * 0.71) * Amp);
   Step := Cfg.LineSpacing;
+  { Past the diagonal so wandering centres still cover the corners. }
   MaxR := Round(Hypot(Pm.Width, Pm.Height)) + Amp;
   R := Step;
   while R <= MaxR do
@@ -336,6 +340,8 @@ begin
   begin
     A := Angle + I * (2 * Pi / Count);
     XorLine(Pm, CX, CY, CX + Round(Cos(A) * Len), CY + Round(Sin(A) * Len), ColA);
+    { Opposite spin, half-spoke offset, slightly different origin: a single
+      shared centre would look like one star, not interference. }
     A := -Angle * 1.15 + I * (2 * Pi / Count) + Pi / Count;
     XorLine(Pm, C2X, C2Y, C2X + Round(Cos(A) * Len), C2Y + Round(Sin(A) * Len), ColB);
   end;
@@ -369,6 +375,7 @@ begin
   CY := Pm.Height div 2;
   Half := Round(Hypot(Pm.Width, Pm.Height));
   DrawParallelSet(Pm, CX, CY, Half, Angle, Cfg.LineSpacing, ColA);
+  { Near-orthogonal second grating is what turns stripes into ripples. }
   DrawParallelSet(Pm, CX, CY, Half, -Angle * 0.85 + Pi / 2, Cfg.LineSpacing, ColB);
 end;
 
@@ -386,6 +393,7 @@ begin
   while R >= Step do
   begin
     XorPolygon(Pm, CX, CY, R, 4, Angle, ColA);
+    { Squares against hexagons: different side counts beat more visibly. }
     XorPolygon(Pm, CX, CY, R, 6, -Angle * 1.1 + Pi / 6, ColB);
     Dec(R, Step);
   end;
@@ -445,6 +453,7 @@ begin
     for I := 0 to 53 do
       Write(F, Header[I]);
     FillChar(Padding, SizeOf(Padding), 0);
+    { BMP rows are bottom-up; we store the pixmap top-down. }
     for Row := Pm.Height - 1 downto 0 do
     begin
       for Col := 0 to Pm.Width - 1 do

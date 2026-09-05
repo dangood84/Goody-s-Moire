@@ -87,6 +87,8 @@ The original Mac module let you play with the gratings from the keyboard. Those 
 | Space | Pause / freeze |
 | `C` | Cycle Mono, Cyan/Magenta, Neon Green |
 
+How the pieces fit together (same style as the Java savers): `WORKINGS.md` for responsibilities and XOR math, `EXECUTION_FLOW.md` for a frame-by-frame trace.
+
 ## Project layout
 
 ```

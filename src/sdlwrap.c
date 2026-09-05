@@ -1,12 +1,14 @@
 /*
- * Thin C shims around SDL2. Window creation stays on the SDL2 ABI;
- * macOS app startup is handled separately by sdlrun.c (SDL3 SDL_RunApp).
+ * Thin C shims around SDL2. Window creation stays on the C ABI so FPC
+ * does not have to pass six integers through cdecl on aarch64 Darwin.
  */
 
 #include <SDL.h>
 
 int Moire_VideoInit(void)
 {
+    /* We did not go through SDL_main; without this, some SDL builds
+       refuse SDL_Init or create a window that never maps. */
     SDL_SetMainReady();
     return SDL_Init(SDL_INIT_VIDEO);
 }

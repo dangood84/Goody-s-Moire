@@ -19,6 +19,8 @@ uses
 const
   LogicalW = 780;
   LogicalH = 640;
+  { Exclusive mode often fakes a motion event; ignore anything smaller
+    so opening full screen does not quit immediately. }
   MouseExitPixels = 12;
   HintSeconds = 5.0;
 
@@ -115,6 +117,7 @@ begin
     SDLK_4:
       SetPattern(App.Cfg, mpPolygons);
     SDLK_UP:
+      { Smaller spacing = denser grating, like the original cdev. }
       SetLineSpacing(App.Cfg, App.Cfg.LineSpacing - 1);
     SDLK_DOWN:
       SetLineSpacing(App.Cfg, App.Cfg.LineSpacing + 1);
@@ -129,6 +132,7 @@ begin
   else
     Exit;
   end;
+  { Save on every key so a crash still keeps the last playful tweak. }
   Persist(App);
 end;
 
@@ -171,6 +175,7 @@ begin
     App.Scale := 1
   else
   begin
+    { Retina: output pixels / 780 logical so hit-tests and the 8×8 font match. }
     App.Scale := OutW div LogicalW;
     if App.Scale < 1 then
       App.Scale := 1;
@@ -190,6 +195,7 @@ begin
   App.FullScreen := True;
   App.FirstMouse := False;
   App.HintLeft := HintSeconds;
+  { Force EnsureBuffers to rebuild at the desktop drawable size. }
   App.PixW := 0;
   App.PixH := 0;
 end;
@@ -296,6 +302,7 @@ begin
   PreviewBuf.Pixels := nil;
   PixmapAlloc(PreviewBuf, PW, PH);
   try
+    { Same DrawMoire as full screen, same config — the well is not a stub. }
     DrawMoire(PreviewBuf, App.Cfg, App.Angle);
     for Row := 0 to PH - 1 do
       for Col := 0 to PW - 1 do
@@ -348,6 +355,7 @@ end;
 
 procedure PresentFrame(var App: TApp);
 begin
+  { Pitch is bytes per row; ARGB8888 is 4 bytes per pixel, tightly packed. }
   if SDL_UpdateTexture(App.Texture, nil, App.Frame.Pixels, App.Frame.Width * SizeOf(LongWord)) <> 0 then
     FailSDL('SDL_UpdateTexture');
   SDL_RenderClear(App.Renderer);
@@ -461,6 +469,7 @@ begin
         end
         else if IsPatternKey(Key) then
         begin
+          { Unlike the Java savers, 1–4 / arrows / Space / C are toys, not wake. }
           HandleHotKey(App, Key);
           App.HintLeft := HintSeconds;
         end
@@ -504,6 +513,7 @@ begin
       begin
         if not App.FirstMouse then
         begin
+          { First sample is the cursor warp into exclusive mode, not the user. }
           App.FirstMouse := True;
           App.FirstMX := Ev.motion.x;
           App.FirstMY := Ev.motion.y;
@@ -533,6 +543,7 @@ begin
   Freq := SDL_GetPerformanceFrequency;
   if (not App.HasLastCounter) or (Freq = 0) then
   begin
+    { First tick only stamps time so dt is not “since process start.” }
     App.LastCounter := Now;
     App.HasLastCounter := True;
     Exit;
@@ -540,6 +551,7 @@ begin
   Dt := (Now - App.LastCounter) / Freq;
   App.LastCounter := Now;
   if Dt > 0.05 then
+    { Cap so a breakpoint or hide does not fling the gratings. }
     Dt := 0.05;
   if not App.Paused then
     App.Angle := App.Angle + RadiansPerSecond(App.Cfg.RotationSpeed) * Dt;

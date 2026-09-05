@@ -7,6 +7,8 @@ library moire;
 uses
   moireentry;
 
+{ Named RunMoire, not MoireEntry: a procedure named like this unit
+  (`moireentry`) is parsed as a unit reference, not a call. }
 exports
   RunMoire;
 

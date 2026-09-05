@@ -2,7 +2,8 @@ unit moireconfig;
 
 {$mode objfpc}{$H+}
 
-{ Appearance model only. Animation angle lives on the canvas, not here. }
+{ Appearance model only. Animation angle lives on the canvas, not here,
+  so a saved INI cannot freeze the pattern mid-spin. }
 
 interface
 
@@ -72,6 +73,7 @@ function ConfigPath: string;
 var
   Dir: string;
 begin
+  { Per-user OS config dir, not the repo, so relaunch keeps the last look. }
   Dir := GetAppConfigDir(False);
   ForceDirectories(Dir);
   Result := IncludeTrailingPathDelimiter(Dir) + 'moire.ini';
@@ -92,6 +94,7 @@ begin
   Result := DefaultConfig;
   Ini := TIniFile.Create(ConfigPath);
   try
+    { Clamp after read so a hand-edited INI cannot inject a bogus enum. }
     Result.Pattern := TMoirePattern(ClampInt(Ini.ReadInteger(Section, 'pattern', Ord(Result.Pattern)), 0, 3));
     Result.LineSpacing := ClampInt(Ini.ReadInteger(Section, 'spacing', Result.LineSpacing), MinSpacing, MaxSpacing);
     Result.RotationSpeed := ClampInt(Ini.ReadInteger(Section, 'speed', Result.RotationSpeed), MinSpeed, MaxSpeed);
@@ -175,6 +178,7 @@ end;
 
 function RadiansPerSecond(Speed: Integer): Double;
 begin
+  { Integer slider 1..40 → angular velocity. 12 * 0.08 = 0.96 rad/s. }
   Result := ClampInt(Speed, MinSpeed, MaxSpeed) * 0.08;
 end;
 

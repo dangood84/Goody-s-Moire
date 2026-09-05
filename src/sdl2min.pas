@@ -3,9 +3,9 @@ unit sdl2min;
 {$mode objfpc}{$H+}
 {$PACKRECORDS C}
 
-{ Minimal SDL2 declarations for a software-canvas window.
-  No Lazarus and no SDL2main. On macOS, NSApplicationLoad stands in for
-  the Cocoa startup that a C program gets from SDL2main. }
+{ Minimal SDL2 declarations for a software-canvas window. No Lazarus.
+  SDL_QUIT is named SDL_EVENT_QUIT: Pascal is case-insensitive and would
+  treat SDL_Quit (the procedure) as the same identifier. }
 
 interface
 

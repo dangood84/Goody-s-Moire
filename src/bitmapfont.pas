@@ -139,6 +139,7 @@ begin
     Glyph := Font8x8[Code];
     for Row := 0 to 7 do
       for Col := 0 to 7 do
+        { font8x8 stores the leftmost pixel in bit 0, not the MSB. }
         if (Glyph[Row] and (1 shl Col)) <> 0 then
           for SY := 0 to Scale - 1 do
             for SX := 0 to Scale - 1 do

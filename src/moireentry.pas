@@ -28,6 +28,8 @@ var
 
 function ArgStr(Index: Integer): string;
 begin
+  { Library code does not get ParamStr filled; these are the C argv
+    pointers handed across from main.c. }
   if (Index < 0) or (Index >= Argc) or (Argv = nil) then
     Result := ''
   else
@@ -44,6 +46,7 @@ end;
 
 function StripPrefix(const Raw: string): string;
 begin
+  { So /s, -s, and --fullscreen share one parser (Windows .scr + Unix). }
   if Copy(Raw, 1, 2) = '--' then
     Result := Copy(Raw, 3, MaxInt)
   else if (Length(Raw) > 0) and ((Raw[1] = '-') or (Raw[1] = '/')) then
@@ -96,6 +99,7 @@ begin
     if (LowerCase(Stripped) = 's') or (LowerCase(Stripped) = 'fullscreen') then
       Mode := lmFullScreen
     else if (LowerCase(Copy(Stripped, 1, 1)) = 'c') or (LowerCase(Stripped) = 'config') then
+      { starts-with c also matches Windows /c:HWND from the Settings dialog. }
       Mode := lmConfig
     else if (LowerCase(Copy(Stripped, 1, 1)) = 'p') or (LowerCase(Stripped) = 'preview') then
       Mode := lmPreview
@@ -143,6 +147,7 @@ end;
 
 procedure RunMoire(CArgc: LongInt; CArgv: PPChar); cdecl;
 {$ifdef DARWIN}
+  { Darwin C symbols are _Name; without the underscore, cc cannot find us. }
   public name '_RunMoire';
 {$else}
   public name 'RunMoire';
@@ -152,6 +157,8 @@ begin
   Argv := CArgv;
   ParseArgs;
   if Mode = lmPreview then
+    { Windows preview HWND: we cannot parent into it, so exit instead of
+      flashing a dialog. }
     Halt(0);
 
   Cfg := LoadConfig;
