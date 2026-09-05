@@ -4,7 +4,7 @@ This note is for an automation tester who wants to see how a small Free Pascal +
 
 You do not need to be an SDL (Simple DirectMedia Layer - the cross-C platform library this app uses to open a window, read keys and this mouse, and put the XOR pixel buffer on the screen) expert or a graphics programmer. The same ideas show up in many GUI and game-like apps: an entry point, a model, a view, and a timed loop that updates an angle then redraws.
 
-There is **no 3D engine** and **no Lazarus**. Two sets of lines or circles are drawn with XOR. Where they overlap, pixels flip back to black (or mix colours). That interference *is* the moiré. The only animation state is a single angle that grows each frame.
+There is **no 3D engine** and **no Lazarus**. Two sets of lines or circles are drawn with XOR (Exclusive-OR, like the XOR-gate). Where they overlap, pixels flip back to black (or mix colours). That interference *is* the moiré. The only animation state is a single angle that grows each frame.
 
 ## Mental model
 
