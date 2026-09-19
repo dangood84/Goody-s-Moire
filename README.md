@@ -17,11 +17,7 @@ macOS (Homebrew):
 brew install fpc sdl2
 ```
 
-Debian / Raspberry Pi OS:
-
-```bash
-sudo apt install fpc libsdl2-dev
-```
+Debian / Raspberry Pi OS: see the Linux section below.
 
 ### Windows 10
 
@@ -78,6 +74,46 @@ bin\moire.exe --fullscreen
 ```
 
 If Windows says it cannot find `SDL2.dll`, the DLL is missing from `bin\` or it is the wrong bitness (32-bit DLL with a 64-bit exe, or the other way around).
+
+### Linux / Raspberry Pi OS
+
+On Debian, Ubuntu, and Raspberry Pi OS you install **Free Pascal** and **SDL2** from `apt`. The package supplies the matching ARM or x86 library, so there is no separate `SDL2.dll` to download.
+
+**1. Packages**
+
+```bash
+sudo apt update
+sudo apt install fpc libsdl2-dev build-essential
+```
+
+`build-essential` gives you `gcc` and `make`, which the Makefile uses. You want the **desktop** Pi image (or any machine already running X11/Wayland). A Lite/SSH-only session has no window to open.
+
+**2. Compile**
+
+From the project folder:
+
+```bash
+make compile
+```
+
+or:
+
+```bash
+./run.sh
+```
+
+That writes `bin/moire` and links it against the system `libSDL2`.
+
+**3. Run**
+
+```bash
+./bin/moire
+./bin/moire --fullscreen
+```
+
+Same keys as on the Mac. If the window never appears over SSH, you are not on a graphical session — run it on the Pi’s desktop, or set `DISPLAY` if you are forwarding X.
+
+32-bit Pi OS (`armhf`) and 64-bit Pi OS (`aarch64`) both work: `apt` installs the SDL2 that matches that OS. Check with `fpc -iTP` if you are curious (`arm` / `aarch64`); you do not pick a zip.
 
 ## Run
 

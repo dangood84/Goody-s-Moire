@@ -18,9 +18,11 @@ ifeq ($(SDL_LIBS),)
 endif
 
 UNAME := $(shell uname)
+WRAP_OBJ :=
 ifeq ($(UNAME),Darwin)
   LIBFILE := libmoire.dylib
   RPATH := -Wl,-rpath,@loader_path -Wl,-rpath,$(SDL_LIBDIR)
+  WRAP_OBJ := $(OUT_DIR)/sdlwrap.o
 else ifeq ($(UNAME),Linux)
   LIBFILE := libmoire.so
   RPATH := -Wl,-rpath,'$$ORIGIN' -Wl,-rpath,$(SDL_LIBDIR)
@@ -29,8 +31,17 @@ else
   RPATH :=
 endif
 
+# Debian / Raspberry Pi OS keep libSDL2.so in a multiarch folder, not /usr/lib.
+MULTIARCH := $(shell gcc -print-multiarch 2>/dev/null)
+
 FPCFLAGS := -Mobjfpc -Sh -O2 -fPIC -FE$(OUT_DIR) -FU$(OUT_DIR) -Fu$(SRC_DIR)
-FPCFLAGS += -Fl$(SDL_LIBDIR) -k-L$(SDL_LIBDIR) -k$(OUT_DIR)/sdlwrap.o -k-lSDL2
+FPCFLAGS += -Fl$(SDL_LIBDIR) -k-L$(SDL_LIBDIR) -k-lSDL2
+ifneq ($(WRAP_OBJ),)
+  FPCFLAGS += -k$(WRAP_OBJ)
+endif
+ifneq ($(MULTIARCH),)
+  FPCFLAGS += -Fl/usr/lib/$(MULTIARCH) -k-L/usr/lib/$(MULTIARCH)
+endif
 
 .PHONY: all compile run config screensaver screenshot clean
 
@@ -40,7 +51,7 @@ $(OUT_DIR)/sdlwrap.o: $(SRC_DIR)/sdlwrap.c
 	mkdir -p $(OUT_DIR)
 	$(CC) -c -o $@ $< $(SDL_CFLAGS)
 
-$(OUT_DIR)/$(LIBFILE): $(SRC_DIR)/moire.pas $(SRC_DIR)/moireentry.pas $(OUT_DIR)/sdlwrap.o
+$(OUT_DIR)/$(LIBFILE): $(SRC_DIR)/moire.pas $(SRC_DIR)/moireentry.pas $(WRAP_OBJ)
 	mkdir -p $(OUT_DIR)
 	$(FPC) $(FPCFLAGS) -o$(OUT_DIR)/$(LIBFILE) $(SRC_DIR)/moire.pas
 
