@@ -33,15 +33,24 @@ You need **two** things next to each other: `moire.exe` (you compile this with `
 fpc -iTP
 ```
 
-- `x86_64` → 64-bit
-- `i386` → 32-bit
+- `x86_64` → 64-bit compiler → `SDL2-…-win32-x64.zip`
+- `i386` → 32-bit compiler → `SDL2-…-win32-x86.zip`
+
+A 2014 Intel MacBook Pro on Boot Camp is a 64-bit PC. The official Windows Free Pascal installer still often ships the **32-bit (`i386`) compiler**. That is normal. Match the DLL to `fpc -iTP`, not to the Mac.
+
+In the SDL zip name, **`win32` means “Windows”**, not “32-bit”:
+
+| Zip name | What it actually is |
+|----------|---------------------|
+| `SDL2-…-win32-x64.zip` | 64-bit DLL (for `x86_64` FPC) |
+| `SDL2-…-win32-x86.zip` | 32-bit DLL (for `i386` FPC) |
+
+If `fpc -iTP` printed `i386` and you already downloaded the **x64** zip, download the **x86** one instead. Easier than installing a 64-bit compiler.
 
 **2. Download `SDL2.dll`**
 
 1. Open the [SDL2 releases](https://github.com/libsdl-org/SDL/releases) page.
-2. Download the **runtime** zip (not “Source code”):
-   - 64-bit FPC: `SDL2-…-win32-x64.zip`
-   - 32-bit FPC: `SDL2-…-win32-x86.zip`
+2. Download the **runtime** zip (not “Source code”) that matches the table above.
 3. Unzip it. Inside is `SDL2.dll`.
 
 **3. Compile the exe**

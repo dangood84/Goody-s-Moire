@@ -32,13 +32,13 @@ if exist bin\SDL2.dll (
   echo.
   echo You still need SDL2.dll next to that exe. You do not compile it.
   echo.
-  echo 1. Look at "Target CPU" above:
-  echo      x86_64  -^> 64-bit zip
-  echo      i386    -^> 32-bit zip
+  echo 1. Look at "Target CPU" above ^(this is the compiler, not the Mac^):
+  echo      x86_64  -^> SDL2-*-win32-x64.zip
+  echo      i386    -^> SDL2-*-win32-x86.zip
+  echo    "win32" in the zip name means Windows, not 32-bit.
+  echo    Stock Windows FPC is often i386 even on a 64-bit Boot Camp partition.
   echo 2. Open:  https://github.com/libsdl-org/SDL/releases
-  echo    Download the latest SDL2 runtime zip, not the Source one:
-  echo      SDL2-*-win32-x64.zip     ^(for x86_64^)
-  echo      SDL2-*-win32-x86.zip     ^(for i386^)
+  echo    Download the latest SDL2 runtime zip, not the Source one.
   echo 3. Unzip it and copy SDL2.dll into this project's bin folder.
   echo 4. Run:  bin\moire.exe
 )
