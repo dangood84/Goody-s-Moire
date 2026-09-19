@@ -124,38 +124,63 @@ type
   end;
   PSDL_Event = ^TSDL_Event;
 
-function Moire_VideoInit: LongInt; cdecl; external name 'Moire_VideoInit';
-function Moire_CreateWindow(title: PAnsiChar; width, height: LongInt; flags: LongWord): PSDL_Window; cdecl; external name 'Moire_CreateWindow';
+const
+{$ifdef MSWINDOWS}
+  SDL2Lib = 'SDL2.dll';
+{$else}
+  SDL2Lib = 'SDL2';
+{$endif}
 
-procedure SDL_SetMainReady; cdecl; external 'SDL2';
-function SDL_Init(flags: LongWord): LongInt; cdecl; external 'SDL2';
-procedure SDL_Quit; cdecl; external 'SDL2';
-function SDL_GetError: PChar; cdecl; external 'SDL2';
+function Moire_VideoInit: LongInt; cdecl;
+{$ifdef DARWIN} external name 'Moire_VideoInit'; {$endif}
+function Moire_CreateWindow(title: PAnsiChar; width, height: LongInt; flags: LongWord): PSDL_Window; cdecl;
+{$ifdef DARWIN} external name 'Moire_CreateWindow'; {$endif}
 
-function SDL_CreateWindow(title: PChar; x, y, w, h: LongInt; flags: LongWord): PSDL_Window; cdecl; external 'SDL2';
-procedure SDL_DestroyWindow(window: PSDL_Window); cdecl; external 'SDL2';
-function SDL_SetWindowFullscreen(window: PSDL_Window; flags: LongWord): LongInt; cdecl; external 'SDL2';
-procedure SDL_SetWindowTitle(window: PSDL_Window; title: PChar); cdecl; external 'SDL2';
-procedure SDL_GetWindowSize(window: PSDL_Window; w, h: PLongInt); cdecl; external 'SDL2';
-procedure SDL_ShowWindow(window: PSDL_Window); cdecl; external 'SDL2';
+procedure SDL_SetMainReady; cdecl; external SDL2Lib;
+function SDL_Init(flags: LongWord): LongInt; cdecl; external SDL2Lib;
+procedure SDL_Quit; cdecl; external SDL2Lib;
+function SDL_GetError: PChar; cdecl; external SDL2Lib;
 
-function SDL_CreateRenderer(window: PSDL_Window; index: LongInt; flags: LongWord): PSDL_Renderer; cdecl; external 'SDL2';
-procedure SDL_DestroyRenderer(renderer: PSDL_Renderer); cdecl; external 'SDL2';
-function SDL_GetRendererOutputSize(renderer: PSDL_Renderer; w, h: PLongInt): LongInt; cdecl; external 'SDL2';
-function SDL_RenderClear(renderer: PSDL_Renderer): LongInt; cdecl; external 'SDL2';
-function SDL_RenderCopy(renderer: PSDL_Renderer; texture: PSDL_Texture; src, dst: PSDL_Rect): LongInt; cdecl; external 'SDL2';
-procedure SDL_RenderPresent(renderer: PSDL_Renderer); cdecl; external 'SDL2';
+function SDL_CreateWindow(title: PChar; x, y, w, h: LongInt; flags: LongWord): PSDL_Window; cdecl; external SDL2Lib;
+procedure SDL_DestroyWindow(window: PSDL_Window); cdecl; external SDL2Lib;
+function SDL_SetWindowFullscreen(window: PSDL_Window; flags: LongWord): LongInt; cdecl; external SDL2Lib;
+procedure SDL_SetWindowTitle(window: PSDL_Window; title: PChar); cdecl; external SDL2Lib;
+procedure SDL_GetWindowSize(window: PSDL_Window; w, h: PLongInt); cdecl; external SDL2Lib;
+procedure SDL_ShowWindow(window: PSDL_Window); cdecl; external SDL2Lib;
 
-function SDL_CreateTexture(renderer: PSDL_Renderer; format: LongWord; access: LongInt; w, h: LongInt): PSDL_Texture; cdecl; external 'SDL2';
-procedure SDL_DestroyTexture(texture: PSDL_Texture); cdecl; external 'SDL2';
-function SDL_UpdateTexture(texture: PSDL_Texture; rect: PSDL_Rect; pixels: Pointer; pitch: LongInt): LongInt; cdecl; external 'SDL2';
+function SDL_CreateRenderer(window: PSDL_Window; index: LongInt; flags: LongWord): PSDL_Renderer; cdecl; external SDL2Lib;
+procedure SDL_DestroyRenderer(renderer: PSDL_Renderer); cdecl; external SDL2Lib;
+function SDL_GetRendererOutputSize(renderer: PSDL_Renderer; w, h: PLongInt): LongInt; cdecl; external SDL2Lib;
+function SDL_RenderClear(renderer: PSDL_Renderer): LongInt; cdecl; external SDL2Lib;
+function SDL_RenderCopy(renderer: PSDL_Renderer; texture: PSDL_Texture; src, dst: PSDL_Rect): LongInt; cdecl; external SDL2Lib;
+procedure SDL_RenderPresent(renderer: PSDL_Renderer); cdecl; external SDL2Lib;
 
-function SDL_PollEvent(event: PSDL_Event): LongInt; cdecl; external 'SDL2';
-function SDL_ShowCursor(toggle: LongInt): LongInt; cdecl; external 'SDL2';
-function SDL_GetPerformanceCounter: QWord; cdecl; external 'SDL2';
-function SDL_GetPerformanceFrequency: QWord; cdecl; external 'SDL2';
-procedure SDL_Delay(ms: LongWord); cdecl; external 'SDL2';
+function SDL_CreateTexture(renderer: PSDL_Renderer; format: LongWord; access: LongInt; w, h: LongInt): PSDL_Texture; cdecl; external SDL2Lib;
+procedure SDL_DestroyTexture(texture: PSDL_Texture); cdecl; external SDL2Lib;
+function SDL_UpdateTexture(texture: PSDL_Texture; rect: PSDL_Rect; pixels: Pointer; pitch: LongInt): LongInt; cdecl; external SDL2Lib;
+
+function SDL_PollEvent(event: PSDL_Event): LongInt; cdecl; external SDL2Lib;
+function SDL_ShowCursor(toggle: LongInt): LongInt; cdecl; external SDL2Lib;
+function SDL_GetPerformanceCounter: QWord; cdecl; external SDL2Lib;
+function SDL_GetPerformanceFrequency: QWord; cdecl; external SDL2Lib;
+procedure SDL_Delay(ms: LongWord); cdecl; external SDL2Lib;
 
 implementation
+
+{$ifndef DARWIN}
+function Moire_VideoInit: LongInt; cdecl;
+begin
+  { Windows/Linux: Pascal can own main, so these are just thin SDL calls.
+    macOS still uses src/sdlwrap.c (see the DARWIN externals above). }
+  SDL_SetMainReady;
+  Result := SDL_Init(SDL_INIT_VIDEO);
+end;
+
+function Moire_CreateWindow(title: PAnsiChar; width, height: LongInt; flags: LongWord): PSDL_Window; cdecl;
+begin
+  Result := SDL_CreateWindow(title, LongInt(SDL_WINDOWPOS_CENTERED),
+    LongInt(SDL_WINDOWPOS_CENTERED), width, height, flags);
+end;
+{$endif}
 
 end.

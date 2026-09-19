@@ -23,7 +23,52 @@ Debian / Raspberry Pi OS:
 sudo apt install fpc libsdl2-dev
 ```
 
-Windows: install FPC and place `SDL2.dll` next to the built `moire.exe` (or on `PATH`).
+### Windows 10
+
+You need **two** things next to each other: `moire.exe` (you compile this with `fpc`) and **`SDL2.dll`** (you download this; you do not build it).
+
+**1. See whether your FPC is 32- or 64-bit**
+
+```bat
+fpc -iTP
+```
+
+- `x86_64` → 64-bit
+- `i386` → 32-bit
+
+**2. Download `SDL2.dll`**
+
+1. Open the [SDL2 releases](https://github.com/libsdl-org/SDL/releases) page.
+2. Download the **runtime** zip (not “Source code”):
+   - 64-bit FPC: `SDL2-…-win32-x64.zip`
+   - 32-bit FPC: `SDL2-…-win32-x86.zip`
+3. Unzip it. Inside is `SDL2.dll`.
+
+**3. Compile the exe**
+
+From the project folder in Command Prompt:
+
+```bat
+build-win.bat
+```
+
+That runs `fpc` on `src\winmain.pas` and writes `bin\moire.exe`. Then copy `SDL2.dll` into `bin\` (same folder as the exe).
+
+Manual compile if you prefer:
+
+```bat
+mkdir bin
+fpc -Mobjfpc -Sh -O2 -FEbin -FUbin -Fusrc -obin\moire.exe src\winmain.pas
+```
+
+**4. Run**
+
+```bat
+bin\moire.exe
+bin\moire.exe --fullscreen
+```
+
+If Windows says it cannot find `SDL2.dll`, the DLL is missing from `bin\` or it is the wrong bitness (32-bit DLL with a 64-bit exe, or the other way around).
 
 ## Run
 
@@ -94,6 +139,7 @@ How the pieces fit together (same style as the Java savers): `WORKINGS.md` for r
 ```
 src/
   main.c             # process entry (so macOS windowing starts cleanly)
+  winmain.pas        # Windows / Linux process entry (fpc emits the exe)
   moire.pas          # Free Pascal library exporting RunMoire
   moireentry.pas     # flag parsing and launch
   moireapp.pas       # preferences chrome, full-screen shell, event loop
